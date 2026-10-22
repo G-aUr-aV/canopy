@@ -1,0 +1,46 @@
+[Unit]
+Description=Canopy read-only EC2 observatory
+After=network.target canopy-services.service
+Wants=canopy-services.service
+
+[Service]
+Type=simple
+User=canopy
+Group=canopy
+WorkingDirectory=/opt/canopy/current
+EnvironmentFile=/etc/canopy/server.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/canopy/venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 4319 --no-access-log --no-server-header
+Restart=on-failure
+RestartSec=3
+UMask=0077
+StateDirectory=canopy
+StateDirectoryMode=0700
+Environment=CANOPY_AUTH_FILE=/var/lib/canopy/auth.json
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=tmpfs
+BindReadOnlyPaths=/home/ubuntu/workspace/repos:/srv/canopy/roots/repos
+BindReadOnlyPaths=/home/ubuntu/workspace/ops:/srv/canopy/roots/ops
+BindReadOnlyPaths=/home/ubuntu/vaults:/srv/canopy/roots/vaults
+InaccessiblePaths=-/root -/run/user -/run/docker.sock -/etc/ssh -/etc/ssl/private -/etc/credstore -/etc/credstore.encrypted
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=localhost
+MemoryMax=384M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
